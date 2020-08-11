@@ -21,6 +21,7 @@ interface CartContext {
   addToCart(item: Omit<Product, 'quantity'>): void;
   increment(id: string): void;
   decrement(id: string): void;
+  remove(id: string): void;
 }
 
 const CartContext = createContext<CartContext | null>(null);
@@ -99,9 +100,21 @@ const CartProvider: React.FC = ({ children }) => {
     [products],
   );
 
+  const remove = useCallback(
+    async id => {
+      try {
+        await AsyncStorage.removeItem(id);
+        setProducts(products.filter(product => product.id !== id));
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [products],
+  );
+
   const value = React.useMemo(
-    () => ({ addToCart, increment, decrement, products }),
-    [products, addToCart, increment, decrement],
+    () => ({ addToCart, increment, decrement, remove, products }),
+    [products, addToCart, increment, decrement, remove],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
